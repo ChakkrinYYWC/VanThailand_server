@@ -23,11 +23,7 @@ func HandleRequest(ctx context.Context) {
 				results := services.GetVanSchedules(ctx, paramVanId)
 				json.NewEncoder(w).Encode(results)
 			} else {
-				resp := models.Response{
-					Message: "fail",
-				}
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp)
+				returnFailed(w)
 			}
 		} else if r.Method == "POST" {
 			body, err := io.ReadAll(r.Body)
@@ -42,17 +38,9 @@ func HandleRequest(ctx context.Context) {
 			}
 			result := services.CreateVanSchedule(ctx, targetSchedule)
 			if result.InsertedID != "" {
-				resp := models.Response{
-					Message: "success",
-				}
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp)
+				returnSuccess(w)
 			} else {
-				resp := models.Response{
-					Message: "fail",
-				}
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp)
+				returnFailed(w)
 			}
 		} else if r.Method == "PATCH" {
 			paramId := r.URL.Query().Get("id")
@@ -69,17 +57,9 @@ func HandleRequest(ctx context.Context) {
 			if targetSchedule != nil {
 				result := services.UpdateSchedule(ctx, paramId, targetSchedule)
 				if result != 0 {
-					resp := models.Response{
-						Message: "success",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnSuccess(w)
 				} else {
-					resp := models.Response{
-						Message: "fail",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnFailed(w)
 				}
 			}
 		} else if r.Method == "DELETE" {
@@ -87,17 +67,9 @@ func HandleRequest(ctx context.Context) {
 			if paramId != "" {
 				result := services.DeleteSchedule(ctx, paramId)
 				if result != 0 {
-					resp := models.Response{
-						Message: "success",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnSuccess(w)
 				} else {
-					resp := models.Response{
-						Message: "fail",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnFailed(w)
 				}
 			} else {
 				results := services.GetVans(ctx)
@@ -132,17 +104,9 @@ func HandleRequest(ctx context.Context) {
 			}
 			result := services.CreateVan(ctx, targetVan)
 			if result.InsertedID != "" {
-				resp := models.Response{
-					Message: "success",
-				}
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp)
+				returnSuccess(w)
 			} else {
-				resp := models.Response{
-					Message: "fail",
-				}
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resp)
+				returnFailed(w)
 			}
 		} else if r.Method == "PATCH" {
 			paramId := r.URL.Query().Get("id")
@@ -159,17 +123,9 @@ func HandleRequest(ctx context.Context) {
 			if targetVan != nil {
 				result := services.UpdateVan(ctx, paramId, targetVan)
 				if result != 0 {
-					resp := models.Response{
-						Message: "success",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnSuccess(w)
 				} else {
-					resp := models.Response{
-						Message: "fail",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnFailed(w)
 				}
 			}
 		} else if r.Method == "DELETE" {
@@ -177,17 +133,9 @@ func HandleRequest(ctx context.Context) {
 			if paramId != "" {
 				result := services.DeleteVan(ctx, paramId)
 				if result != 0 {
-					resp := models.Response{
-						Message: "success",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnSuccess(w)
 				} else {
-					resp := models.Response{
-						Message: "fail",
-					}
-					w.Header().Set("Content-Type", "application/json")
-					json.NewEncoder(w).Encode(resp)
+					returnFailed(w)
 				}
 			} else {
 				results := services.GetVans(ctx)
@@ -198,4 +146,20 @@ func HandleRequest(ctx context.Context) {
 		}
 	})
 	http.ListenAndServe(":8080", nil)
+}
+
+func returnFailed(w http.ResponseWriter) {
+	resp := models.Response{
+		Message: "fail",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
+}
+
+func returnSuccess(w http.ResponseWriter) {
+	resp := models.Response{
+		Message: "success",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(resp)
 }
