@@ -23,6 +23,7 @@ func ConnectDB(ctx context.Context) *mongo.Client {
 	Database = client.Database(databaseName)
 	VanCollection = Database.Collection("Vans")
 	VanScheduleCollection = Database.Collection("VanSchedule")
+	UserCollection = Database.Collection("Users")
 	fmt.Println("Connected to MongoDB!")
 	return client
 }
