@@ -4,6 +4,12 @@ type VanImageStruct struct {
 	Path string `bson:"path"`
 }
 
+type RecieveVansStruct struct {
+	Name string `bson:"name"`
+	Code string `bson:"code"`
+	Desc string `bson:"desc"`
+}
+
 type VansStruct struct {
 	Name      string           `bson:"name"`
 	Code      string           `bson:"code"`

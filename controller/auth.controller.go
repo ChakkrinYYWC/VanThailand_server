@@ -7,7 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"van_thailand_server/config"
+	"van_thailand_server/configdata"
 	"van_thailand_server/models"
 	"van_thailand_server/services"
 
@@ -115,7 +115,7 @@ func authMiddleware() http.Handler {
 func verifyJWT(tokenString string) error {
 	claims := &models.Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return config.JwtKey, nil
+		return configdata.JwtKey, nil
 	})
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {

@@ -2,6 +2,8 @@ package services
 
 import (
 	"context"
+	"log"
+	"mime/multipart"
 	"van_thailand_server/models"
 	"van_thailand_server/repositories"
 
@@ -18,12 +20,27 @@ func GetVans(ctx context.Context) []*models.ReturnVansStruct {
 	return targetVan
 }
 
-func CreateVan(ctx context.Context, targetVan *models.VansStruct) *mongo.InsertOneResult {
-	result := repositories.CreateVan(ctx, targetVan)
+func CreateVan(ctx context.Context, name string, code string, desc string, files []*multipart.FileHeader) *mongo.InsertOneResult {
+	var vanImages []string
+	for _, file := range files {
+		openedFile, err := file.Open()
+		if err != nil {
+			log.Println("openedFile error: ", err)
+			return nil
+		}
+		url, err := repositories.UploadFileToS3(openedFile, file)
+		if err != nil {
+			log.Println("url error: ", err)
+			return nil
+		}
+		vanImages = append(vanImages, url)
+		openedFile.Close()
+	}
+	result := repositories.CreateVan(ctx, name, code, desc, vanImages)
 	return result
 }
 
-func UpdateVan(ctx context.Context, targetId string, targetVan *models.VansStruct) int {
+func UpdateVan(ctx context.Context, targetId string, targetVan *models.RecieveVansStruct) int {
 	result := repositories.UpdateVan(ctx, targetId, targetVan)
 	return result
 }

@@ -110,7 +110,7 @@ func HandleRequest(ctx context.Context) {
 	})
 	// ################################################################################################
 	http.HandleFunc("/vanManagement", func(w http.ResponseWriter, r *http.Request) {
-		var targetVan *models.VansStruct
+		var targetVan *models.RecieveVansStruct
 		if r.Method == http.MethodGet {
 			param := r.URL.Query().Get("id")
 			if param != "" {
@@ -123,18 +123,22 @@ func HandleRequest(ctx context.Context) {
 				return
 			}
 		} else if r.Method == http.MethodPost {
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				log.Println("Invalid body: ", err)
-				return
-			}
-			err = json.Unmarshal(body, &targetVan)
-			if err != nil {
-				log.Println("Unmarshal failed: ", err)
-				return
-			}
-			if targetVan != nil {
-				result := services.CreateVan(ctx, targetVan)
+			// body, err := io.ReadAll(r.Body)
+			// if err != nil {
+			// 	log.Println("Invalid body: ", err)
+			// 	return
+			// }
+			// err = json.Unmarshal(body, &targetVan)
+			// if err != nil {
+			// 	log.Println("Unmarshal failed: ", err)
+			// 	return
+			// }
+			name := r.FormValue("name")
+			code := r.FormValue("code")
+			desc := r.FormValue("desc")
+			files := r.MultipartForm.File["images"]
+			if name != "" && code != "" {
+				result := services.CreateVan(ctx, name, code, desc, files)
 				if result.InsertedID != "" {
 					ReturnSuccess(w)
 					return
@@ -144,7 +148,7 @@ func HandleRequest(ctx context.Context) {
 					return
 				}
 			} else {
-				log.Println("No body given.")
+				log.Println("body invalid.")
 				ReturnFailed(w)
 				return
 			}

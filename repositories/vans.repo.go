@@ -46,15 +46,32 @@ func GetAllVans(ctx context.Context) []*models.ReturnVansStruct {
 	return results
 }
 
-func CreateVan(ctx context.Context, targetVan *models.VansStruct) *mongo.InsertOneResult {
-	result, err := database.VanCollection.InsertOne(ctx, targetVan)
+func CreateVan(ctx context.Context, name string, code string, desc string, vanImage []string) *mongo.InsertOneResult {
+	var updateData bson.D
+	if name != "" {
+		nameBson := bson.D{{Key: "name", Value: name}}
+		updateData = append(updateData, nameBson...)
+	}
+	if code != "" {
+		codeBson := bson.D{{Key: "code", Value: code}}
+		updateData = append(updateData, codeBson...)
+	}
+	if desc != "" {
+		descBson := bson.D{{Key: "desc", Value: desc}}
+		updateData = append(updateData, descBson...)
+	}
+	if vanImage != nil {
+		imageBson := bson.D{{Key: "imageParth", Value: vanImage}}
+		updateData = append(updateData, imageBson...)
+	}
+	result, err := database.VanCollection.InsertOne(ctx, updateData)
 	if err != nil {
 		log.Fatal(err)
 	}
 	return result
 }
 
-func UpdateVan(ctx context.Context, vanId string, targetVan *models.VansStruct) int {
+func UpdateVan(ctx context.Context, vanId string, targetVan *models.RecieveVansStruct) int {
 	objectID, err := primitive.ObjectIDFromHex(vanId)
 	if err != nil {
 		fmt.Println(err)

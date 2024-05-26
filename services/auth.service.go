@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 	"time"
-	"van_thailand_server/config"
+	"van_thailand_server/configdata"
 	"van_thailand_server/models"
 	"van_thailand_server/repositories"
 
@@ -21,7 +21,7 @@ func generateJWT(username string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(config.JwtKey)
+	return token.SignedString(configdata.JwtKey)
 }
 
 func checkPasswordHash(password, hash string) bool {
