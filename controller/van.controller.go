@@ -3,47 +3,47 @@ package controller
 import (
 	"context"
 	"encoding/json"
-	"io"
 	"log"
 	"net/http"
-	"van_thailand_server/models"
 	"van_thailand_server/services"
 )
 
 func HandleRequest(ctx context.Context) {
 	http.HandleFunc("/vanSchedule", func(w http.ResponseWriter, r *http.Request) {
-		var targetSchedule *models.ScheduleStruct
 		if r.Method == http.MethodGet {
 			paramId := r.URL.Query().Get("id")
 			paramVanId := r.URL.Query().Get("van_id")
 			if paramId != "" {
 				result := services.GetVanSchedule(ctx, paramId)
-				json.NewEncoder(w).Encode(result)
-				return
+				if result != nil {
+					json.NewEncoder(w).Encode(result)
+					return
+				} else {
+					ReturnFailed(w)
+					return
+				}
 			} else if paramVanId != "" {
+				log.Println("Get van schedule by van id: ", paramVanId)
 				results := services.GetVanSchedules(ctx, paramVanId)
-				json.NewEncoder(w).Encode(results)
-				return
+				log.Println("Result: ", results)
+				if results != nil {
+					json.NewEncoder(w).Encode(results)
+					return
+				} else {
+					ReturnFailed(w)
+					return
+				}
 			} else {
 				log.Println("No params given.")
 				ReturnFailed(w)
 				return
 			}
 		} else if r.Method == http.MethodPost {
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				log.Println("Read body failed: ", err)
-				ReturnFailed(w)
-				return
-			}
-			err = json.Unmarshal(body, &targetSchedule)
-			if err != nil {
-				log.Println("Unmarshal failed: ", err)
-				ReturnFailed(w)
-				return
-			}
-			if targetSchedule != nil {
-				result := services.CreateVanSchedule(ctx, targetSchedule)
+			vanId := r.FormValue("vanId")
+			date := r.FormValue("date")
+			destination := r.FormValue("destination")
+			if vanId != "" && date != "" && destination != "" {
+				result := services.CreateVanSchedule(ctx, vanId, date, destination)
 				if result.InsertedID != "" {
 					ReturnSuccess(w)
 					return
@@ -59,20 +59,11 @@ func HandleRequest(ctx context.Context) {
 			}
 		} else if r.Method == http.MethodPatch {
 			paramId := r.URL.Query().Get("id")
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				log.Println("Invalid body: ", err)
-				ReturnFailed(w)
-				return
-			}
-			err = json.Unmarshal(body, &targetSchedule)
-			if err != nil {
-				log.Println("Unmarshal failed: ", err)
-				ReturnFailed(w)
-				return
-			}
-			if targetSchedule != nil {
-				result := services.UpdateSchedule(ctx, paramId, targetSchedule)
+			vanId := r.FormValue("vanId")
+			date := r.FormValue("date")
+			destination := r.FormValue("destination")
+			if (vanId != "" || date != "" || destination != "") && paramId != "" {
+				result := services.UpdateSchedule(ctx, paramId, vanId, date, destination)
 				if result != 0 {
 					ReturnSuccess(w)
 					return
@@ -110,29 +101,28 @@ func HandleRequest(ctx context.Context) {
 	})
 	// ################################################################################################
 	http.HandleFunc("/vanManagement", func(w http.ResponseWriter, r *http.Request) {
-		var targetVan *models.RecieveVansStruct
 		if r.Method == http.MethodGet {
 			param := r.URL.Query().Get("id")
 			if param != "" {
 				results := services.GetVan(ctx, param)
-				json.NewEncoder(w).Encode(results)
-				return
+				if results != nil {
+					json.NewEncoder(w).Encode(results)
+					return
+				} else {
+					ReturnFailed(w)
+					return
+				}
 			} else {
 				results := services.GetVans(ctx)
-				json.NewEncoder(w).Encode(results)
-				return
+				if results != nil {
+					json.NewEncoder(w).Encode(results)
+					return
+				} else {
+					ReturnFailed(w)
+					return
+				}
 			}
 		} else if r.Method == http.MethodPost {
-			// body, err := io.ReadAll(r.Body)
-			// if err != nil {
-			// 	log.Println("Invalid body: ", err)
-			// 	return
-			// }
-			// err = json.Unmarshal(body, &targetVan)
-			// if err != nil {
-			// 	log.Println("Unmarshal failed: ", err)
-			// 	return
-			// }
 			name := r.FormValue("name")
 			code := r.FormValue("code")
 			desc := r.FormValue("desc")
@@ -154,20 +144,13 @@ func HandleRequest(ctx context.Context) {
 			}
 		} else if r.Method == http.MethodPatch {
 			paramId := r.URL.Query().Get("id")
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				log.Println("PATCH vanManagement recieve invalid body: ", err)
-				ReturnFailed(w)
-				return
-			}
-			err = json.Unmarshal(body, &targetVan)
-			if err != nil {
-				log.Println("Unmarshal failed: ", err)
-				ReturnFailed(w)
-				return
-			}
-			if targetVan != nil {
-				result := services.UpdateVan(ctx, paramId, targetVan)
+			name := r.FormValue("name")
+			code := r.FormValue("code")
+			desc := r.FormValue("desc")
+			files := r.MultipartForm.File["images"]
+			imagePosition := r.FormValue("imagePosition")
+			if paramId != "" && (name != "" || code != "" || desc != "" || (files != nil && imagePosition != "")) {
+				result := services.UpdateVan(ctx, paramId, name, code, desc, files, imagePosition)
 				if result != 0 {
 					ReturnSuccess(w)
 					return

@@ -14,10 +14,10 @@ func main() {
 	mongoDB := database.ConnectDB(ctx)
 	storage.Init(ctx)
 
-	http.ListenAndServe(":8080", nil)
-
 	controller.HandleRequest(ctx)
 	controller.HandleAuth(ctx)
+
+	http.ListenAndServe(":8080", nil)
 
 	defer mongoDB.Disconnect(ctx)
 	defer fmt.Println("MongoDB disconnected")

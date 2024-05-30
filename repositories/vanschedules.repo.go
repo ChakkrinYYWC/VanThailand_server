@@ -52,31 +52,45 @@ func GetVanSchedules(ctx context.Context, targetVanId string) []*models.ReturnSc
 	return results
 }
 
-func CreateSchedule(ctx context.Context, schedule *models.ScheduleStruct) *mongo.InsertOneResult {
-	result, err := database.VanScheduleCollection.InsertOne(ctx, schedule)
+func CreateSchedule(ctx context.Context, vanId string, date string, destination string) *mongo.InsertOneResult {
+	var updateData bson.D
+	if vanId != "" {
+		vanIdBson := bson.D{{Key: "van_id", Value: vanId}}
+		updateData = append(updateData, vanIdBson...)
+	}
+	if date != "" {
+		dateBson := bson.D{{Key: "date", Value: date}}
+		updateData = append(updateData, dateBson...)
+	}
+	if destination != "" {
+		destinationBson := bson.D{{Key: "destination", Value: destination}}
+		updateData = append(updateData, destinationBson...)
+	}
+	update := bson.D{{Key: "$set", Value: updateData}}
+	result, err := database.VanScheduleCollection.InsertOne(ctx, update)
 	if err != nil {
 		log.Fatal("CreateSchedule: ", err)
 	}
 	return result
 }
 
-func UpdateSchedule(ctx context.Context, scheduleId string, schedule *models.ScheduleStruct) int {
+func UpdateSchedule(ctx context.Context, scheduleId string, vanId string, date string, destination string) int {
 	objectID, err := primitive.ObjectIDFromHex(scheduleId)
 	if err != nil {
 		fmt.Println(err)
 	}
 	filter := bson.D{{Key: "_id", Value: objectID}}
 	var updateData bson.D
-	if schedule.VanId != "" {
-		vanIdBson := bson.D{{Key: "van_id", Value: schedule.VanId}}
+	if vanId != "" {
+		vanIdBson := bson.D{{Key: "van_id", Value: vanId}}
 		updateData = append(updateData, vanIdBson...)
 	}
-	if schedule.Date != "" {
-		dateBson := bson.D{{Key: "date", Value: schedule.Date}}
+	if date != "" {
+		dateBson := bson.D{{Key: "date", Value: date}}
 		updateData = append(updateData, dateBson...)
 	}
-	if schedule.Destination != "" {
-		destinationBson := bson.D{{Key: "destination", Value: schedule.Destination}}
+	if destination != "" {
+		destinationBson := bson.D{{Key: "destination", Value: destination}}
 		updateData = append(updateData, destinationBson...)
 	}
 	update := bson.D{{Key: "$set", Value: updateData}}

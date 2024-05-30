@@ -18,13 +18,13 @@ func GetVanSchedules(ctx context.Context, targetVanId string) []*models.ReturnSc
 	return result
 }
 
-func CreateVanSchedule(ctx context.Context, schedule *models.ScheduleStruct) *mongo.InsertOneResult {
-	result := repositories.CreateSchedule(ctx, schedule)
+func CreateVanSchedule(ctx context.Context, vanId string, date string, destination string) *mongo.InsertOneResult {
+	result := repositories.CreateSchedule(ctx, vanId, date, destination)
 	return result
 }
 
-func UpdateSchedule(ctx context.Context, scheduleId string, schedule *models.ScheduleStruct) int {
-	result := repositories.UpdateSchedule(ctx, scheduleId, schedule)
+func UpdateSchedule(ctx context.Context, scheduleId string, vanId string, date string, destination string) int {
+	result := repositories.UpdateSchedule(ctx, scheduleId, vanId, date, destination)
 	return result
 }
 

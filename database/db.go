@@ -12,7 +12,7 @@ import (
 var Database *mongo.Database
 
 func ConnectDB(ctx context.Context) *mongo.Client {
-	log.Println("Connecting to MongoDB...")
+	fmt.Println("Connecting to MongoDB...")
 	var (
 		mongoURI     = "mongodb+srv://forthAdmin:0807800687forth@vanthailand.9mwh1za.mongodb.net/"
 		databaseName = "VanThailand"

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"van_thailand_server/database"
 	"van_thailand_server/models"
 
@@ -61,7 +63,7 @@ func CreateVan(ctx context.Context, name string, code string, desc string, vanIm
 		updateData = append(updateData, descBson...)
 	}
 	if vanImage != nil {
-		imageBson := bson.D{{Key: "imageParth", Value: vanImage}}
+		imageBson := bson.D{{Key: "imagePath", Value: vanImage}}
 		updateData = append(updateData, imageBson...)
 	}
 	result, err := database.VanCollection.InsertOne(ctx, updateData)
@@ -71,24 +73,52 @@ func CreateVan(ctx context.Context, name string, code string, desc string, vanIm
 	return result
 }
 
-func UpdateVan(ctx context.Context, vanId string, targetVan *models.RecieveVansStruct) int {
+func UpdateVan(ctx context.Context, vanId string, name string, code string, desc string, vanImages []string, imagePosition string) int {
 	objectID, err := primitive.ObjectIDFromHex(vanId)
 	if err != nil {
 		fmt.Println(err)
 	}
 	filter := bson.D{{Key: "_id", Value: objectID}}
 	var updateData bson.D
-	if targetVan.Name != "" {
-		nameBson := bson.D{{Key: "name", Value: targetVan.Name}}
+	if name != "" {
+		nameBson := bson.D{{Key: "name", Value: name}}
 		updateData = append(updateData, nameBson...)
 	}
-	if targetVan.Desc != "" {
-		descBson := bson.D{{Key: "desc", Value: targetVan.Desc}}
+	if desc != "" {
+		descBson := bson.D{{Key: "desc", Value: desc}}
 		updateData = append(updateData, descBson...)
 	}
-	if targetVan.Code != "" {
-		codeBson := bson.D{{Key: "code", Value: targetVan.Code}}
+	if code != "" {
+		codeBson := bson.D{{Key: "code", Value: code}}
 		updateData = append(updateData, codeBson...)
+	}
+	if vanImages != nil {
+		var targetVan *models.ReturnVansStruct
+		err = database.VanCollection.FindOne(ctx, filter).Decode(&targetVan)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var newVanImages []string
+		updatePosition := strings.Split(imagePosition, ",")
+		que := 0
+		for index := 0; index < 5; index++ {
+			if que >= len(updatePosition) {
+				break
+			}
+			positionInt, err := strconv.Atoi(updatePosition[que])
+			if err != nil {
+				log.Fatal(err)
+			}
+			fmt.Println("before_2")
+			if index == positionInt {
+				newVanImages = append(newVanImages, vanImages[que])
+				que++
+			} else {
+				newVanImages = append(newVanImages, targetVan.ImagePath[index])
+			}
+		}
+		imageBson := bson.D{{Key: "imagePath", Value: newVanImages}}
+		updateData = append(updateData, imageBson...)
 	}
 	update := bson.D{{Key: "$set", Value: updateData}}
 	result, err := database.VanCollection.UpdateOne(ctx, filter, update)
